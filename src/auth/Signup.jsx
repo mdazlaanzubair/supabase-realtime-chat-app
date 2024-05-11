@@ -42,13 +42,10 @@ const SignupForm = () => {
         if (error) {
           setError(error?.message);
           console.log("Error", error);
-          setTimeout(() => setSuccessMsg(null), 5000);
+          setTimeout(() => setSuccessMsg(null), 10000);
         } else {
-          console.log("Data", data);
-          console.log("Error", error);
           setSuccessMsg("Check email for verification link!");
           setTimeout(() => setSuccessMsg(null), 5000);
-          navigate("/global-room");
         }
 
         setIsLoading(false);
