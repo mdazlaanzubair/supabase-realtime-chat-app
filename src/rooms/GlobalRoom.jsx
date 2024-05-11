@@ -9,6 +9,7 @@ const GlobalRoom = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [dataToUpdate, setDataToUpdate] = useState(null);
   const [chats, setChats] = useState([]);
 
   const logout = async () => {
@@ -19,7 +20,7 @@ const GlobalRoom = () => {
     if (error) {
       setError(error?.message);
       console.log("Error", error);
-      setTimeout(() => setSuccessMsg(null), 5000);
+      setTimeout(() => setError(null), 5000);
       setIsLoading(false);
     } else {
       navigate("/");
@@ -52,7 +53,7 @@ const GlobalRoom = () => {
       if (error) {
         setError(error?.message);
         console.log("Error", error);
-        setTimeout(() => setSuccessMsg(null), 5000);
+        setTimeout(() => setError(null), 5000);
       }
 
       if (data) {
@@ -62,8 +63,8 @@ const GlobalRoom = () => {
 
       setIsLoading(false);
     } else {
-      setError("Write something before submitting!");
-      setTimeout(() => setSuccessMsg(null), 5000);
+      ("Write something before submitting!");
+      setTimeout(() => setError(null), 5000);
       setIsLoading(false);
     }
   };
@@ -71,23 +72,104 @@ const GlobalRoom = () => {
   const getChats = async () => {
     setIsLoading(true);
 
-    const { data, error } = await supabaseClient
-      .from("Chats")
-      .select("*")
-      .order("created_at", { ascending: true });
+    if (user?.email == "basitali23@gmail.com") {
+      const { data, error } = await supabaseClient
+        .from("Chats")
+        .select("*")
+        .order("created_at", { ascending: true });
 
-    if (error) {
-      setError(error?.message);
-      console.log("Error", error);
-      setTimeout(() => setSuccessMsg(null), 5000);
+      if (error) {
+        setError(error?.message);
+        console.log("Error", error);
+        setTimeout(() => setError(null), 5000);
+      }
+
+      if (data) {
+        setChats([...data]);
+        setMessage("");
+      }
+
+      setIsLoading(false);
+    } else {
+      const { data, error } = await supabaseClient
+        .from("Chats")
+        .select("*")
+        .eq("isDelete", false)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        setError(error?.message);
+        console.log("Error", error);
+        setTimeout(() => setError(null), 5000);
+      }
+
+      if (data) {
+        setChats([...data]);
+        setMessage("");
+      }
+
+      setIsLoading(false);
     }
+  };
 
-    if (data) {
-      setChats([...data]);
-      setMessage("");
+  const updateChat = async (chatData) => {
+    setIsLoading(true);
+
+    if (chatData) {
+      const { error, data } = await supabaseClient
+        .from("Chats")
+        .update({ message: chatData?.message })
+        .eq("id", chatData?.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        setError(error?.message);
+        console.log("Error", error);
+        setTimeout(() => setError(null), 5000);
+      }
+
+      if (data) {
+        const updatedArray = chats?.map((chat) => {
+          if (chat?.id == data?.id) {
+            return data;
+          } else {
+            return chat;
+          }
+        });
+        setChats([...updatedArray]);
+        setDataToUpdate(null);
+      }
+
+      setIsLoading(false);
     }
+  };
 
-    setIsLoading(false);
+  const deleteChat = async (chatData) => {
+    setIsLoading(true);
+
+    if (chatData) {
+      const { error, data } = await supabaseClient
+        .from("Chats")
+        .update({ isDelete: true })
+        .eq("id", chatData?.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        setError(error?.message);
+        console.log("Error", error);
+        setTimeout(() => setError(null), 5000);
+      }
+
+      if (data && data?.isDelete) {
+        const updatedArray = chats?.filter((chat) => chat?.id != data?.id);
+        setChats([...updatedArray]);
+        setDataToUpdate(null);
+      }
+
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -162,12 +244,17 @@ const GlobalRoom = () => {
                   return (
                     <div className="w-fit max-w-2/3 my-3" key={index}>
                       <h1 className="text-sm font-bold">{item?.user_name}</h1>
-                      <p className="p-2 text-sm text-slate-600 bg-[#f5f5f5] rounded-tl-none rounded-xl">
+                      <p className="relative p-2 text-sm text-slate-600 bg-[#f5f5f5] rounded-tl-none rounded-xl">
                         {item?.message}
                       </p>
-                      <p className="text-[0.6rem] text-slate-400 ml-px">
+                      <div className="text-[0.6rem] text-slate-400 ml-px flex items-center justify-between gap-3">
                         {moment(item?.created_at).fromNow()}
-                      </p>
+                        {user?.email == "basitali23@gmail.com" && (
+                          <span className="text-blue-600">
+                            {item?.isDelete ? "Deleted" : "Not Deleted"}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   );
                 } else {
@@ -177,10 +264,75 @@ const GlobalRoom = () => {
                       key={index}
                     >
                       <h1 className="text-sm font-bold">You</h1>
-                      <p className="p-2 text-sm text-[#f5f5f5] bg-blue-600 rounded-tr-none rounded-xl">
-                        {item?.message}
-                      </p>
-                      <p className="text-[0.6rem] text-slate-400 ml-px">
+                      <div
+                        className="relative p-2 text-sm text-[#f5f5f5] bg-blue-600 rounded-tr-none rounded-xl"
+                        onDoubleClick={() => setDataToUpdate(item)}
+                      >
+                        {dataToUpdate && dataToUpdate?.id == item?.id ? (
+                          <textarea
+                            style={{
+                              resize: "none",
+                            }}
+                            name="messages"
+                            id="message-box"
+                            className="w-[90%] bg-transparent focus:outline-none active:outline-none pt-1"
+                            placeholder="Enter your message here..."
+                            value={dataToUpdate?.message}
+                            onChange={(e) =>
+                              setDataToUpdate({
+                                ...dataToUpdate,
+                                message: e.target.value,
+                              })
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") updateChat(dataToUpdate);
+                            }}
+                            autoFocus
+                          />
+                        ) : (
+                          item?.message
+                        )}
+                        {dataToUpdate && dataToUpdate?.id == item?.id && (
+                          <div className="absolute top-1/2 -translate-y-1/2 -left-11 flex items-center gap-1">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-4 h-4 text-red-600 cursor-pointer"
+                              onClick={() => deleteChat(item)}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                              />
+                            </svg>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-4 h-4 text-slate-500 cursor-pointer"
+                              onClick={() => setDataToUpdate(null)}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18 18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-[0.6rem] text-slate-400 ml-px flex items-center justify-between gap-3">
+                        {user?.email == "basitali23@gmail.com" && (
+                          <span className="text-blue-600">
+                            {item?.isDelete ? "Deleted" : "Not Deleted"}
+                          </span>
+                        )}
                         {moment(item?.created_at).fromNow()}
                       </p>
                     </div>
