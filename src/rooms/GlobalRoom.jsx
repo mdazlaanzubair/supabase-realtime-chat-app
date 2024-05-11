@@ -172,6 +172,43 @@ const GlobalRoom = () => {
     }
   };
 
+  // SUPABASE SOCKET FOR REALTIME UPDATES
+  const insertChatSocket = supabaseClient
+    .channel("custom-all-channel")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "Chats" },
+      (payload) => {
+        setChats([...chats, payload?.new]);
+      }
+    )
+    .subscribe();
+
+  const updateChatSocket = supabaseClient
+    .channel("custom-all-channel")
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "Chats" },
+      (payload) => {
+        if (payload?.new?.isDelete) {
+          const updatedArray = chats?.filter(
+            (chat) => chat?.id != payload?.new?.id
+          );
+          setChats([...updatedArray]);
+        } else {
+          const updatedArray = chats?.map((chat) => {
+            if (chat?.id == payload?.new?.id) {
+              return payload?.new;
+            } else {
+              return chat;
+            }
+          });
+          setChats([...updatedArray]);
+        }
+      }
+    )
+    .subscribe();
+
   useEffect(() => {
     const email = localStorage.getItem("email");
     const name = localStorage.getItem("name");
