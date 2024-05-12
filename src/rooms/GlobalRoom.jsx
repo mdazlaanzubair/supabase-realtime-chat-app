@@ -212,7 +212,39 @@ const GlobalRoom = () => {
   useEffect(() => {
     console.log("Chat Insert Socket", insertChatSocket);
     console.log("Chat Update Socket", updateChatSocket);
-    setInterval(() => getChats(), 500);
+
+    const fetchChats = async () => {
+      if (user?.email == "basitali23@gmail.com") {
+        const { data, error } = await supabaseClient
+          .from("Chats")
+          .select("*")
+          .order("created_at", { ascending: true });
+
+        if (error) {
+          setError(error?.message);
+          console.log("Error", error);
+          setTimeout(() => setError(null), 5000);
+        }
+
+        if (data) setChats([...data]);
+      } else {
+        const { data, error } = await supabaseClient
+          .from("Chats")
+          .select("*")
+          .eq("isDelete", false)
+          .order("created_at", { ascending: true });
+
+        if (error) {
+          setError(error?.message);
+          console.log("Error", error);
+          setTimeout(() => setError(null), 5000);
+        }
+
+        if (data) setChats([...data]);
+      }
+    };
+
+    setInterval(() => fetchChats(), 500);
   }, []);
 
   useEffect(() => {
