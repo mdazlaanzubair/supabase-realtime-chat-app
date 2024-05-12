@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabaseClient } from "../client";
 import moment from "moment";
@@ -11,6 +11,8 @@ const GlobalRoom = () => {
   const [message, setMessage] = useState("");
   const [dataToUpdate, setDataToUpdate] = useState(null);
   const [chats, setChats] = useState([]);
+
+  const chatScrollRef = useRef(null);
 
   const logout = async () => {
     setIsLoading(true);
@@ -59,6 +61,7 @@ const GlobalRoom = () => {
       if (data) {
         setChats([...chats, data]);
         setMessage("");
+        scrollChatToBottom();
       }
 
       setIsLoading(false);
@@ -139,6 +142,7 @@ const GlobalRoom = () => {
         });
         setChats([...updatedArray]);
         setDataToUpdate(null);
+        scrollChatToBottom();
       }
 
       setIsLoading(false);
@@ -166,9 +170,20 @@ const GlobalRoom = () => {
         const updatedArray = chats?.filter((chat) => chat?.id != data?.id);
         setChats([...updatedArray]);
         setDataToUpdate(null);
+        scrollChatToBottom();
       }
 
       setIsLoading(false);
+    }
+  };
+
+  const scrollChatToBottom = () => {
+    // Scroll to the bottom of the element
+    if (chatScrollRef && chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+      chatScrollRef.current.scrollIntoView({
+        behavior: "smooth",
+      });
     }
   };
 
@@ -312,7 +327,10 @@ const GlobalRoom = () => {
         </div>
         <div className="flex w-full flex-col gap-3 items-center justify-center border border-slate-200 bg-slate-100 shadow-lg p-5 rounded-lg">
           <h1 className="text-xl font-bold">Chats</h1>
-          <div className="flex-grow h-[60vh] overscroll-x-none overflow-y-auto border w-full p-3 rounded-md bg-white">
+          <div
+            ref={chatScrollRef}
+            className="flex-grow h-[60vh] overscroll-x-none overflow-y-auto border w-full p-3 rounded-md bg-white"
+          >
             {chats?.length > 0 ? (
               chats?.map((item, index) => {
                 if (item?.user_id != user?.user_id) {
