@@ -210,6 +210,12 @@ const GlobalRoom = () => {
     .subscribe();
 
   useEffect(() => {
+    console.log("Chat Insert Socket", insertChatSocket);
+    console.log("Chat Update Socket", updateChatSocket);
+    setInterval(() => getChats(), 500);
+  }, []);
+
+  useEffect(() => {
     const email = localStorage.getItem("email");
     const name = localStorage.getItem("name");
     const access_token = localStorage.getItem("access_token");

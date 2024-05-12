@@ -8,14 +8,11 @@ import GlobalRoom from "./rooms/GlobalRoom";
 
 const router = createBrowserRouter([
   {
-    basename: "/app",
-  },
-  {
     path: "/",
     element: <SigninForm />,
   },
   {
-    path: "/register",
+    path: "/secret-register",
     element: <SignupForm />,
   },
   {

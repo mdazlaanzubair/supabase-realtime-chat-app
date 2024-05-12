@@ -219,9 +219,9 @@ const SigninForm = () => {
           )}
           Login
         </button>
-        <Link to="/register" className="text-blue-600">
+        {/* <Link to="/register" className="text-blue-600">
           Create new account
-        </Link>
+        </Link> */}
       </div>
     </form>
   );
