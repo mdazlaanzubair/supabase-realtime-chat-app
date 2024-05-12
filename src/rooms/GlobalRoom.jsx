@@ -274,7 +274,7 @@ const GlobalRoom = () => {
         </div>
         <div className="flex w-full flex-col gap-3 items-center justify-center border border-slate-200 bg-slate-100 shadow-lg p-5 rounded-lg">
           <h1 className="text-xl font-bold">Chats</h1>
-          <div className="flex-grow h-[60vh] overflow-y-auto border w-full p-3 rounded-md bg-white">
+          <div className="flex-grow h-[60vh] overscroll-x-none overflow-y-auto border w-full p-3 rounded-md bg-white">
             {chats?.length > 0 ? (
               chats?.map((item, index) => {
                 if (item?.user_id != user?.user_id) {
@@ -365,12 +365,11 @@ const GlobalRoom = () => {
                         )}
                       </div>
                       <p className="text-[0.6rem] text-slate-400 ml-px flex items-center justify-between gap-3">
-                        {user?.email == "basitali23@gmail.com" && (
-                          <span className="text-blue-600">
-                            {item?.isDelete ? "Deleted" : "Not Deleted"}
-                          </span>
-                        )}
-                        {moment(item?.created_at).fromNow()}
+                        <span className="text-blue-600">
+                          {user?.email == "basitali23@gmail.com" &&
+                            (item?.isDelete ? "Deleted" : "Not Deleted")}
+                        </span>
+                        {moment(item?.created_at).fromNow()}ß
                       </p>
                     </div>
                   );
