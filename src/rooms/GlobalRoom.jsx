@@ -277,7 +277,7 @@ const GlobalRoom = () => {
 
   if (user) {
     return (
-      <div className="w-[60vw] lg:w-[30vw] flex flex-col items-center justify-center gap-3">
+      <div className="w-[90vw] lg:w-[30vw] flex flex-col items-center justify-center gap-3">
         <div className="flex w-full items-center justify-between gap-3">
           <div className="flex-grow">
             <h1 className="text-sm font-bold truncate w-40" title={user?.name}>
